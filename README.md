@@ -41,3 +41,97 @@
 | 前端交互     | Vue3, Axios          | 用户输入与结果展示     |
 
 ---
+
+## 代码结构
+![img.png](img.png)
+
+---
+
+
+# 🧠 模型架构说明
+
+本项目构建了一个基于 PyTorch 的房价预测模型，结合了 **数值特征的标准化** 和 **类别特征的 Embedding 表达**，适用于高维稀疏输入的数据建模任务。
+
+---
+
+## 📥 输入层
+
+- **连续数值特征（StandardScaler 处理）**：
+  - 面积（square）
+  - 楼层总数（total_floor）
+  - 室/厅/厨/卫数量（room, hall, kitchen, bath）
+
+- **类别特征（通过 Embedding 映射）**：
+  - 楼层类型（floor_level）
+  - 朝向（direction_simple）
+  - 装修（decoration）
+  - 电梯（elevator）
+  - 产权（ownership）
+
+---
+
+## 📚 Embedding 层
+
+对每个类别特征构建一个 Embedding 向量，将稀疏高维的 One-hot 编码转换为低维稠密向量，从而：
+
+- 降低维度
+- 捕捉语义信息
+- 提高模型泛化能力
+
+---
+
+## 🧩 隐藏层
+
+一个全连接层网络结构：
+
+```
+[嵌入向量] + [数值特征] → Linear(合并维度 → 64) → ReLU → Linear(64 → 1)
+```
+
+- 使用 `ReLU` 激活函数处理非线性关系。
+- 所有嵌入向量与数值特征拼接为一个统一输入。
+
+---
+
+## 🎯 输出层
+
+- 单神经元回归输出预测的 **标准化后的房价总价**。
+- 通过 `StandardScaler.inverse_transform` 反标准化为实际预测价格。
+
+---
+
+## 📉 损失函数
+
+- 使用 **均方误差（MSE）** 作为回归任务的损失函数：
+
+```python
+loss = nn.MSELoss()
+```
+
+---
+
+## ⚙️ 优化器
+
+- 使用 Adam 优化器，适应性学习率，收敛快、效果稳定：
+
+```python
+optimizer = optim.Adam(model.parameters(), lr=0.01)
+```
+
+---
+
+# 🚀 未来规划
+
+## 🔍 模型优化方向
+
+- [ ] 引入更多输入特征，如小区名、楼龄、房屋标签、周边设施等
+- [ ] 支持时间序列分析，建模价格趋势
+- [ ] 探索深度模型架构，如 Transformer、TabNet 等
+
+## 🔧 工程化目标
+
+- [ ] 提供 Docker 镜像及一键部署脚本
+- [ ] 接入 CI/CD 流水线，实现自动测试与自动发布
+- [ ] 提供 RESTful API 服务（已支持 Flask）
+
+
